@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Way to One-Way Turing Machine Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+        }
+
+        nav {
+            background: #2c3e50;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        nav li {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        nav a {
+            display: block;
+            padding: 18px 20px;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover, nav a.active {
+            background: #34495e;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin: 30px 0 15px 0;
+            font-size: 1.6em;
+        }
+
+        h3 {
+            color: #555;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: monospace;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .tape-container {
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        .tape-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .tape {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+            min-width: fit-content;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .cell.head {
+            background: #ffd700;
+            border-color: #ff6b6b;
+            border-width: 3px;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(255,107,107,0.3);
+        }
+
+        .cell.left-part {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .cell.right-part {
+            background: #f3e5f5;
+            border-color: #9c27b0;
+        }
+
+        .cell.marker {
+            background: #ffeb3b;
+            border-color: #f57c00;
+            font-size: 24px;
+        }
+
+        .state-display {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+
+        .state-display strong {
+            color: #667eea;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .step-info {
+            background: #e8f5e9;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .glossary-item {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .glossary-item h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        .final-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            margin: 40px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .example-machines {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .example-card h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .example-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #2c3e50;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            nav li {
+                min-width: 100%;
+            }
+
+            .cell {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#simulation" class="nav-link">Simulation</a></li>
+                <li><a href="#manual" class="nav-link">User Manual</a></li>
+                <li><a href="#glossary" class="nav-link">Glossary</a></li>
+            </ul>
+        </nav>
+
+        <div class="content">
+            <!-- HOME SECTION -->
+            <section id="home" class="section active">
+                <h1>🎓 Two-Way to One-Way Turing Machine Converter</h1>
+                
+                <div class="info-box">
+                    <h2>Welcome!</h2>
+                    <p>This interactive demonstration shows how a <span class="highlight">Two-Way Turing Machine (2WTM)</span> can be converted into a <span class="highlight">One-Way Turing Machine (1WTM)</span> using the <span class="highlight">F-method</span>.</p>
+                </div>
+
+                <h2>🧠 What is a Two-Way Turing Machine?</h2>
+                <p>A <strong>Two-Way Turing Machine (2WTM)</strong> is a computational model where the read/write head can move in <strong>both directions</strong> — left (L) and right (R) — along an infinite tape.</p>
+
+                <h2>🔄 What is a One-Way Turing Machine?</h2>
+                <p>A <strong>One-Way Turing Machine (1WTM)</strong> can only move its head in <strong>one direction</strong> — typically to the right (R). It cannot move left once it has passed a tape cell.</p>
+
+                <h2>🎯 The F-method Explained</h2>
+                <div class="info-box">
+                    <p>The <strong>F-method</strong> is a technique that proves these two models have <strong>equal computational power</strong>. Here's how it works:</p>
+                    
+                    <h3>Core Concept:</h3>
+                    <p>The 1WTM simulates the 2WTM by encoding its entire configuration on a single tape, divided into two parts:</p>
+                    <ul style="margin: 15px 0; padding-left: 30px;">
+                        <li><strong>Left part (reversed)</strong>: Everything to the left of the 2WTM's head</li>
+                        <li><strong>Special marker (#)</strong>: Separates the two parts</li>
+                        <li><strong>Right part (normal)</strong>: Everything at and to the right of the 2WTM's head</li>
+                    </ul>
+
+                    <h3>How Movement is Simulated:</h3>
+                    <ul style="margin: 15px 0; padding-left: 30px;">
+                        <li><strong>When 2WTM moves right:</strong> The 1WTM shifts symbols between the left and right parts</li>
+                        <li><strong>When 2WTM moves left:</strong> The 1WTM updates the configuration by moving symbols from the right part to the left part (in reverse)</li>
+                    </ul>
+
+                    <h3>Key Insight:</h3>
+                    <p>The 1WTM <strong>never moves left</strong>, but it can still simulate leftward movement by manipulating the encoded configuration. This proves that <strong>two-way movement adds no extra computational power</strong>!</p>
+                </div>
+
+                <h2>🎨 Why This Matters</h2>
+                <p>This demonstration proves a fundamental result in the <strong>Theory of Computation</strong>:</p>
+                <div class="final-message">
+                    Every Two-Way Turing Machine can be simulated by a One-Way Turing Machine — proving that both have equal computational power.
+                </div>
+
+                <div class="info-box">
+                    <h3>Ready to explore?</h3>
+                    <p>Click on the <strong>Simulation</strong> tab above to see the F-method in action with interactive visualizations!</p>
+                </div>
+            </section>
+
+            <!-- SIMULATION SECTION -->
+            <section id="simulation" class="section">
+                <h1>⚙️ Interactive Simulation</h1>
+
+                <h2>Select an Example Machine</h2>
+                <div class="example-machines">
+                    <div class="example-card" onclick="loadExample('palindrome')">
+                        <h4>Palindrome Checker</h4>
+                        <p>Checks if input is a palindrome by moving back and forth</p>
+                    </div>
+                    <div class="example-card" onclick="loadExample('copy')">
+                        <h4>String Copier</h4>
+                        <p>Copies the input string by traversing left and right</p>
+                    </div>
+                    <div class="example-card" onclick="loadExample('custom')">
+                        <h4>Custom Machine</h4>
+                        <p>Define your own transition function</p>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="inputString">Input String:</label>
+                    <input type="text" id="inputString" value="aba" placeholder="Enter input string (e.g., aba, 0110)">
+                </div>
+
+                <div class="input-group">
+                    <label for="startPosition">Starting Position:</label>
+                    <select id="startPosition">
+                        <option value="left">Left</option>
+                        <option value="middle" selected>Middle</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+
+                <div class="input-group" id="customMachineInput" style="display:none;">
+                    <label for="transitionFunction">Transition Function (JSON format):</label>
+                    <textarea id="transitionFunction" placeholder='{"q0": {"a": ["q1", "b", "R"], "b": ["q2", "a", "L"]}}'></textarea>
+                    <p style="color: #666; font-size: 0.9em; margin-top: 5px;">Format: {state: {symbol: [nextState, writeSymbol, direction]}}</p>
+                </div>
+
+                <div class="controls">
+                    <button class="btn" onclick="runSimulation()">▶️ Run 2WTM Simulation</button>
+                    <button class="btn" onclick="convertToOneway()">🔄 Convert to 1WTM (F-method)</button>
+                    <button class="btn btn-secondary" onclick="resetSimulation()">↺ Reset</button>
+                </div>
+
+                <div id="simulationArea"></div>
+            </section>
+
+            <!-- USER MANUAL SECTION -->
+            <section id="manual" class="section">
+                <h1>📖 User Manual</h1>
+
+                <h2>Getting Started</h2>
+                <div class="info-box">
+                    <p>This simulator helps you understand how the F-method converts a Two-Way Turing Machine into a One-Way Turing Machine. Follow these steps to use it effectively.</p>
+                </div>
+
+                <h3>Step 1: Choose a Machine</h3>
+                <p>Select one of the example machines or choose "Custom Machine" to define your own:</p>
+                <ul style="margin: 15px 0; padding-left: 30px;">
+                    <li><strong>Palindrome Checker:</strong> Demonstrates back-and-forth movement to verify palindromes</li>
+                    <li><strong>String Copier:</strong> Shows how data is copied using bidirectional movement</li>
+                    <li><strong>Custom Machine:</strong> Allows you to input your own transition function</li>
+                </ul>
+
+                <h3>Step 2: Configure Your Input</h3>
+                <ol style="margin: 15px 0; padding-left: 30px;">
+                    <li><strong>Input String:</strong> Enter the string you want to process (e.g., "aba", "0110")</li>
+                    <li><strong>Starting Position:</strong> Choose where the head begins:
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li><strong>Left:</strong> Head starts at the first symbol</li>
+                            <li><strong>Middle:</strong> Head starts at the center of the string</li>
+                            <li><strong>Right:</strong> Head starts at the last symbol</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h3>Step 3: Run the Simulation</h3>
+                <p>Click <strong>"Run 2WTM Simulation"</strong> to see the Two-Way Turing Machine in action:</p>
+                <ul style="margin: 15px 0; padding-left: 30px;">
+                    <li>Watch the <span style="background: #ffd700; padding: 2px 8px; border-radius: 3px;">golden cell</span> showing the current head position</li>
+                    <li>Observe the current state displayed above the tape</li>
+                    <li>See how the head moves left and right based on the transition function</li>
+                    <li>The simulation runs step-by-step with automatic delays for clarity</li>
+                </ul>
+
+                <h3>Step 4: Convert to One-Way Machine</h3>
+                <p>Click <strong>"Convert to 1WTM (F-method)"</strong> to see the F-method simulation:</p>
+                <ul style="margin: 15px 0; padding-left: 30px;">
+                    <li><span style="background: #e3f2fd; padding: 2px 8px; border-radius: 3px;">Blue cells</span>: Left part of tape (reversed)</li>
+                    <li><span style="background: #ffeb3b; padding: 2px 8px; border-radius: 3px;"># marker</span>: Separator between left and right parts</li>
+                    <li><span style="background: #f3e5f5; padding: 2px 8px; border-radius: 3px;">Purple cells</span>: Right part of tape (normal order)</li>
+                    <li>Watch how the 1WTM updates the configuration without ever moving left</li>
+                </ul>
+
+                <h3>Understanding the Visualization</h3>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #ffd700; border-color: #ff6b6b;"></div>
+                        <span>Current Head Position</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #e3f2fd; border-color: #2196f3;"></div>
+                        <span>Left Part (Reversed)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #f3e5f5; border-color: #9c27b0;"></div>
+                        <span>Right Part (Normal)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #ffeb3b; border-color: #f57c00;"></div>
+                        <span>Separator Marker (#)</span>
+                    </div>
+                </div>
+
+                <h3>Custom Transition Functions</h3>
+                <p>If you select "Custom Machine", you can define your own transition function in JSON format:</p>
+                <div class="info-box">
+                    <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto;">{
+  "q0": {
+    "a": ["q1", "b", "R"],
+    "b": ["q2", "a", "L"]
+  },
+  "q1": {
+    "a": ["qf", "a", "R"]
+  }
+}</pre>
+                    <p style="margin-top: 15px;"><strong>Format:</strong> {currentState: {readSymbol: [nextState, writeSymbol, direction]}}</p>
+                    <ul style="margin: 10px 0; padding-left: 30px;">
+                        <li><strong>currentState:</strong> The current state (e.g., "q0", "q1")</li>
+                        <li><strong>readSymbol:</strong> The symbol currently under the head</li>
+                        <li><strong>nextState:</strong> The state to transition to</li>
+                        <li><strong>writeSymbol:</strong> The symbol to write on the tape</li>
+                        <li><strong>direction:</strong> "L" (left) or "R" (right)</li>
+                    </ul>
+                </div>
+
+                <h3>Important Notes</h3>
+                <div class="info-box" style="border-left-color: #ff9800;">
+                    <ul style="padding-left: 20px;">
+                        <li>This is a <strong>conceptual demonstration</strong> for educational purposes</li>
+                        <li>The simulation shows key steps but may simplify some details for clarity</li>
+                        <li>The F-method encoding is shown visually but the full implementation details are abstracted</li>
+                        <li>Machines halt when they reach a state with no defined transitions</li>
+                        <li>Empty tape cells are represented by the blank symbol "_"</li>
+                    </ul>
+                </div>
+
+                <h3>Troubleshooting</h3>
+                <p><strong>Simulation doesn't start:</strong> Make sure you've entered a valid input string and selected a machine.</p>
+                <p><strong>Custom machine errors:</strong> Check that your JSON is properly formatted with valid state names and directions (L or R).</p>
+                <p><strong>Visualization issues:</strong> Try resetting the simulation and running it again.</p>
+            </section>
+
+            <!-- GLOSSARY SECTION -->
+            <section id="glossary" class="section">
+                <h1>📚 Glossary</h1>
+
+                <div class="glossary-item">
+                    <h3>Turing Machine</h3>
+                    <p>A theoretical computational model consisting of an infinite tape, a read/write head, a set of states, and a transition function. It's used to define what it means for a function to be computable.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>State</h3>
+                    <p>The current condition or mode of the Turing machine. The machine transitions between states based on what it reads from the tape. Common states include starting state (q0), intermediate states (q1, q2, ...), and final/accepting states (qf).</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Tape</h3>
+                    <p>An infinite sequence of cells, each containing a symbol from the machine's alphabet. The tape serves as both the input medium and the working memory for the Turing machine.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Transition Function</h3>
+                    <p>The "program" of the Turing machine. It defines, for each combination of current state and symbol read, what the machine should do: which state to enter next, what symbol to write, and which direction to move the head.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Head Movement</h3>
+                    <p>The movement of the read/write head along the tape:</p>
+                    <ul style="margin: 10px 0; padding-left: 30px;">
+                        <li><strong>L (Left):</strong> Move one cell to the left</li>
+                        <li><strong>R (Right):</strong> Move one cell to the right</li>
+                        <li><strong>S (Stay):</strong> Remain at the current cell (in some variants)</li>
+                    </ul>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Configuration</h3>
+                    <p>A complete description of the Turing machine at a given moment in time, including:</p>
+                    <ul style="margin: 10px 0; padding-left: 30px;">
+                        <li>The current state</li>
+                        <li>The contents of the tape</li>
+                        <li>The position of the head</li>
+                    </ul>
+                    <p>Configurations are often written as: left_tape + current_state + right_tape</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Two-Way Turing Machine (2WTM)</h3>
+                    <p>A Turing machine where the head can move in both directions (left and right) along the tape. This is the standard model of a Turing machine.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>One-Way Turing Machine (1WTM)</h3>
+                    <p>A restricted Turing machine where the head can only move in one direction (typically right). Once the head passes a cell, it cannot return to read or modify it.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>F-method</h3>
+                    <p>A technique for simulating a Two-Way Turing Machine using a One-Way Turing Machine. The method encodes the 2WTM's configuration on a single tape divided into two parts:</p>
+                    <ul style="margin: 10px 0; padding-left: 30px;">
+                        <li><strong>Left part (reversed):</strong> All symbols to the left of the 2WTM's head, in reverse order</li>
+                        <li><strong>Marker:</strong> A special symbol (like #) separating the two parts</li>
+                        <li><strong>Right part (normal):</strong> All symbols at and to the right of the 2WTM's head, in normal order</li>
+                    </ul>
+                    <p>The 1WTM manipulates this encoding to simulate bidirectional movement without ever moving left itself.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Simulation</h3>
+                    <p>The process of one computational model (the 1WTM) mimicking the behavior of another model (the 2WTM). A correct simulation means that for any input, both machines produce the same result.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Computational Equivalence</h3>
+                    <p>Two models of computation are equivalent if they can simulate each other — that is, anything computable by one model is also computable by the other. The F-method proves that 2WTMs and 1WTMs are computationally equivalent.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Blank Symbol</h3>
+                    <p>A special symbol (often represented as "_" or "B") that represents an empty tape cell. Tapes are initialized with all blank symbols except for the input.</p>
+                </div>
+
+                <div class="glossary-item">
+                    <h3>Halting</h3>
+                    <p>A Turing machine halts when it reaches a configuration where no transition is defined for the current state and symbol. This can represent acceptance (if in an accepting state) or rejection.</p>
+                </div>
+
+                <div class="final-message">
+                    Understanding these concepts is key to grasping the Theory of Computation and the fundamental limits of what computers can compute!
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = e.target.getAttribute('href').substring(1);
+                
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                e.target.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // Example machines
+        const machines = {
+            palindrome: {
+                transitions: {
+                    'q0': {
+                        'a': ['q1', 'X', 'R'],
+                        'b': ['q2', 'X', 'R'],
+                        'X': ['qf', 'X', 'R']
+                    },
+                    'q1': {
+                        'a': ['q1', 'a', 'R'],
+                        'b': ['q1', 'b', 'R'],
+                        'Y': ['q1', 'Y', 'R'],
+                        '_': ['q3', '_', 'L']
+                    },
+                    'q2': {
+                        'a': ['q2', 'a', 'R'],
+                        'b': ['q2', 'b', 'R'],
+                        'Y': ['q2', 'Y', 'R'],
+                        '_': ['q4', '_', 'L']
+                    },
+                    'q3': {
+                        'a': ['q5', 'Y', 'L'],
+                        'X': ['qf', 'X', 'R']
+                    },
+                    'q4': {
+                        'b': ['q5', 'Y', 'L'],
+                        'X': ['qf', 'X', 'R']
+                    },
+                    'q5': {
+                        'a': ['q5', 'a', 'L'],
+                        'b': ['q5', 'b', 'L'],
+                        'Y': ['q5', 'Y', 'L'],
+                        'X': ['q0', 'X', 'R']
+                    }
+                },
+                description: 'Palindrome checker'
+            },
+            copy: {
+                transitions: {
+                    'q0': {
+                        'a': ['q1', 'X', 'R'],
+                        'b': ['q2', 'X', 'R'],
+                        '_': ['qf', '_', 'R']
+                    },
+                    'q1': {
+                        'a': ['q1', 'a', 'R'],
+                        'b': ['q1', 'b', 'R'],
+                        '_': ['q3', 'a', 'L']
+                    },
+                    'q2': {
+                        'a': ['q2', 'a', 'R'],
+                        'b': ['q2', 'b', 'R'],
+                        '_': ['q4', 'b', 'L']
+                    },
+                    'q3': {
+                        'a': ['q3', 'a', 'L'],
+                        'b': ['q3', 'b', 'L'],
+                        'X': ['q0', 'X', 'R']
+                    },
+                    'q4': {
+                        'a': ['q4', 'a', 'L'],
+                        'b': ['q4', 'b', 'L'],
+                        'X': ['q0', 'X', 'R']
+                    }
+                },
+                description: 'String copier'
+            }
+        };
+
+        let currentMachine = machines.palindrome;
+        let currentMachineType = 'palindrome';
+
+        function loadExample(type) {
+            currentMachineType = type;
+            const customInput = document.getElementById('customMachineInput');
+            
+            if (type === 'custom') {
+                customInput.style.display = 'block';
+                document.getElementById('transitionFunction').value = JSON.stringify(machines.palindrome.transitions, null, 2);
+            } else {
+                customInput.style.display = 'none';
+                currentMachine = machines[type];
+            }
+
+            resetSimulation();
+        }
+
+        function resetSimulation() {
+            document.getElementById('simulationArea').innerHTML = '';
+        }
+
+        async function runSimulation() {
+            const input = document.getElementById('inputString').value || 'aba';
+            const startPos = document.getElementById('startPosition').value;
+            
+            if (currentMachineType === 'custom') {
+                try {
+                    const customTrans = JSON.parse(document.getElementById('transitionFunction').value);
+                    currentMachine = { transitions: customTrans, description: 'Custom machine' };
+                } catch (e) {
+                    alert('Invalid JSON format for transition function!');
+                    return;
+                }
+            }
+
+            const simulationArea = document.getElementById('simulationArea');
+            simulationArea.innerHTML = '<h2>Two-Way Turing Machine (2WTM) Simulation</h2>';
+
+            const tapeContainer = document.createElement('div');
+            tapeContainer.className = 'tape-container';
+            simulationArea.appendChild(tapeContainer);
+
+            const stateDisplay = document.createElement('div');
+            stateDisplay.className = 'state-display';
+            tapeContainer.appendChild(stateDisplay);
+
+            const tapeDiv = document.createElement('div');
+            tapeDiv.className = 'tape';
+            tapeContainer.appendChild(tapeDiv);
+
+            const stepInfo = document.createElement('div');
+            stepInfo.className = 'step-info';
+            tapeContainer.appendChild(stepInfo);
+
+            let tape = ['_', '_', '_', ...input.split(''), '_', '_', '_'];
+            let headPos = startPos === 'left' ? 3 : 
+                         startPos === 'right' ? 3 + input.length - 1 :
+                         3 + Math.floor(input.length / 2);
+            let state = 'q0';
+            let steps = 0;
+            const maxSteps = 100;
+
+            function renderTape() {
+                tapeDiv.innerHTML = '';
+                tape.forEach((symbol, index) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (index === headPos) {
+                        cell.classList.add('head');
+                    }
+                    cell.textContent = symbol;
+                    tapeDiv.appendChild(cell);
+                });
+                stateDisplay.innerHTML = `<strong>Current State:</strong> ${state} | <strong>Steps:</strong> ${steps}`;
+            }
+
+            renderTape();
+            await sleep(800);
+
+            while (steps < maxSteps) {
+                const currentSymbol = tape[headPos];
+                const transition = currentMachine.transitions[state]?.[currentSymbol];
+
+                if (!transition) {
+                    stepInfo.innerHTML = `✓ Halted at state ${state} (no transition for symbol '${currentSymbol}')`;
+                    break;
+                }
+
+                const [nextState, writeSymbol, direction] = transition;
+                
+                stepInfo.innerHTML = `Reading '${currentSymbol}' in state ${state} → Write '${writeSymbol}', Move ${direction}, Go to ${nextState}`;
+                
+                tape[headPos] = writeSymbol;
+                state = nextState;
+                
+                if (direction === 'L') {
+                    headPos--;
+                    if (headPos < 0) {
+                        tape.unshift('_');
+                        headPos = 0;
+                    }
+                } else if (direction === 'R') {
+                    headPos++;
+                    if (headPos >= tape.length) {
+                        tape.push('_');
+                    }
+                }
+
+                steps++;
+                renderTape();
+                await sleep(600);
+
+                if (state === 'qf' || state.includes('halt')) {
+                    stepInfo.innerHTML = `✓ Accepted! Reached final state ${state}`;
+                    break;
+                }
+            }
+
+            if (steps >= maxSteps) {
+                stepInfo.innerHTML = `⚠ Stopped after ${maxSteps} steps (safety limit)`;
+            }
+        }
+
+        async function convertToOneway() {
+            const input = document.getElementById('inputString').value || 'aba';
+            const startPos = document.getElementById('startPosition').value;
+
+            if (currentMachineType === 'custom') {
+                try {
+                    const customTrans = JSON.parse(document.getElementById('transitionFunction').value);
+                    currentMachine = { transitions: customTrans, description: 'Custom machine' };
+                } catch (e) {
+                    alert('Invalid JSON format for transition function!');
+                    return;
+                }
+            }
+
+            const simulationArea = document.getElementById('simulationArea');
+            const separator = document.createElement('div');
+            separator.innerHTML = '<h2 style="margin-top: 40px;">One-Way Turing Machine (1WTM) using F-method</h2>';
+            simulationArea.appendChild(separator);
+
+            const infoBox = document.createElement('div');
+            infoBox.className = 'info-box';
+            infoBox.innerHTML = `
+                <p><strong>Encoding:</strong> The 1WTM encodes the 2WTM configuration as: <span class="highlight">[Left (reversed)] # [Right (normal)]</span></p>
+                <p>The 1WTM only moves right, but simulates both directions by updating this encoding.</p>
+            `;
+            simulationArea.appendChild(infoBox);
+
+            const tapeContainer = document.createElement('div');
+            tapeContainer.className = 'tape-container';
+            simulationArea.appendChild(tapeContainer);
+
+            const stateDisplay = document.createElement('div');
+            stateDisplay.className = 'state-display';
+            tapeContainer.appendChild(stateDisplay);
+
+            const tapeLabel = document.createElement('div');
+            tapeLabel.className = 'tape-label';
+            tapeLabel.textContent = 'Encoded Configuration:';
+            tapeContainer.appendChild(tapeLabel);
+
+            const tapeDiv = document.createElement('div');
+            tapeDiv.className = 'tape';
+            tapeContainer.appendChild(tapeDiv);
+
+            const stepInfo = document.createElement('div');
+            stepInfo.className = 'step-info';
+            tapeContainer.appendChild(stepInfo);
+
+            let tape = ['_', '_', '_', ...input.split(''), '_', '_', '_'];
+            let headPos = startPos === 'left' ? 3 : 
+                         startPos === 'right' ? 3 + input.length - 1 :
+                         3 + Math.floor(input.length / 2);
+            let state = 'q0';
+            let steps = 0;
+            const maxSteps = 100;
+
+            function renderEncodedTape() {
+                tapeDiv.innerHTML = '';
+                
+                const leftPart = tape.slice(0, headPos).reverse();
+                const rightPart = tape.slice(headPos);
+
+                leftPart.forEach(symbol => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell left-part';
+                    cell.textContent = symbol;
+                    tapeDiv.appendChild(cell);
+                });
+
+                const marker = document.createElement('div');
+                marker.className = 'cell marker';
+                marker.textContent = '#';
+                tapeDiv.appendChild(marker);
+
+                rightPart.forEach((symbol, index) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell right-part';
+                    if (index === 0) {
+                        cell.classList.add('head');
+                    }
+                    cell.textContent = symbol;
+                    tapeDiv.appendChild(cell);
+                });
+
+                stateDisplay.innerHTML = `<strong>Current State:</strong> ${state} | <strong>Steps:</strong> ${steps} | <strong>Head at first symbol of right part</strong>`;
+            }
+
+            renderEncodedTape();
+            await sleep(800);
+
+            while (steps < maxSteps) {
+                const currentSymbol = tape[headPos];
+                const transition = currentMachine.transitions[state]?.[currentSymbol];
+
+                if (!transition) {
+                    stepInfo.innerHTML = `✓ Halted at state ${state} (no transition for symbol '${currentSymbol}')`;
+                    break;
+                }
+
+                const [nextState, writeSymbol, direction] = transition;
+                
+                stepInfo.innerHTML = `2WTM would: Read '${currentSymbol}' in ${state} → Write '${writeSymbol}', Move ${direction}<br>
+                                      1WTM action: Update encoding to reflect the new configuration`;
+                
+                tape[headPos] = writeSymbol;
+                state = nextState;
+                
+                if (direction === 'L') {
+                    headPos--;
+                    if (headPos < 0) {
+                        tape.unshift('_');
+                        headPos = 0;
+                    }
+                } else if (direction === 'R') {
+                    headPos++;
+                    if (headPos >= tape.length) {
+                        tape.push('_');
+                    }
+                }
+
+                steps++;
+                renderEncodedTape();
+                await sleep(700);
+
+                if (state === 'qf' || state.includes('halt')) {
+                    stepInfo.innerHTML = `✓ Accepted! Reached final state ${state}<br>The 1WTM successfully simulated the 2WTM without ever moving left!`;
+                    break;
+                }
+            }
+
+            if (steps >= maxSteps) {
+                stepInfo.innerHTML = `⚠ Stopped after ${maxSteps} steps (safety limit)`;
+            }
+
+            const finalBox = document.createElement('div');
+            finalBox.className = 'final-message';
+            finalBox.style.marginTop = '30px';
+            finalBox.innerHTML = 'This interactive demonstration shows that every Two-Way Turing Machine can be simulated by a One-Way Turing Machine using the F-method — proving that both have equal computational power.';
+            simulationArea.appendChild(finalBox);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize with palindrome example
+        loadExample('palindrome');
+    </script>
+</body>
+</html>
